@@ -8,8 +8,8 @@ import DraftBlog from "../models/draftBlogsModel";
 import userModel from "../models/userModel";
 
 const PageConfig = (req: Request) => {
-  const limit = Number(req.query.limit) * 1 || 3;
-  const page = Number(req.query.page) * 1 || 1;
+  const limit = Number(req.query?.limit) * 1 || 3;
+  const page = Number(req.query?.page) * 1 || 1;
   const skip = (page - 1) * limit;
 
   return { page, limit, skip };
@@ -21,11 +21,11 @@ const blogCtrl = {
   getBlogs: async (req: Request, res: Response) => {
     const { limit, skip } = PageConfig(req);
 
-    const key = req.originalUrl;
-    if (myCache.has(key)) {
-      const cacheResponseBlogs = await myCache.get(key);
-      res.json(cacheResponseBlogs);
-    }
+    // const key = req.originalUrl;
+    // if (myCache.has(key)) {
+    //   const cacheResponseBlogs = await myCache.get(key);
+    //   res.json(cacheResponseBlogs);
+    // }
 
     try {
       // const blogs = await Blogs.find().sort("-createdAt");
@@ -85,7 +85,7 @@ const blogCtrl = {
       }
       // Neu muon hien thi tong so trang
       // res.json({ blogs, total });
-      myCache.set(key, blogs);
+      // myCache.set(key, blogs);
       res.json(blogs);
     } catch (error: any) {
       res.status(500).json({ success: false, error: error.message });
@@ -170,13 +170,21 @@ const blogCtrl = {
     }
   },
 
+  /**
+   * Lấy danh sách blog của page hiện tại
+   * @param req
+   * @param res
+   */
   getBlogsPage: async (req: IReqAuth, res: Response) => {
     const { skip, limit } = PageConfig(req);
-    const key = req.originalUrl;
-    if (myCache.has(key)) {
-      const cacheResponseBlogsPageSearch = myCache.get(key);
-      res.json(cacheResponseBlogsPageSearch);
-    }
+
+    console.log("abc: ", { skip, limit });
+
+    // const key = req.originalUrl;
+    // if (myCache.has(key)) {
+    //   const cacheResponseBlogsPageSearch = myCache.get(key);
+    //   res.json(cacheResponseBlogsPageSearch);
+    // }
 
     try {
       const blogs = await Blogs.find();
@@ -186,7 +194,7 @@ const blogCtrl = {
         .populate("user")
         .populate("category");
 
-      myCache.set(key, { blogs: blogsValue, totalCount: blogs.length });
+      // myCache.set(key, { blogs: blogsValue, totalCount: blogs.length });
       res.json({ blogs: blogsValue, totalCount: blogs.length });
     } catch (error: any) {
       res.status(500).json({ msg: error.message });
@@ -275,7 +283,7 @@ const blogCtrl = {
         console.log({ newBlog });
       }
       res.json({
-        ...newBlog._doc,
+        ...newBlog?._doc,
         user: req.user,
         msg:
           classify === "create"
@@ -492,7 +500,7 @@ const blogCtrl = {
 
   updateBlog: async (req: IReqAuth, res: Response) => {
     if (!req.user)
-      return res.status(400).json({ msg: "Invalid Authentication 14" });
+      return res.status(400).json({ msg: "Invalid Authentication" });
 
     try {
       const newBlog = req.body;
@@ -508,7 +516,7 @@ const blogCtrl = {
           newBlog
         );
         if (!blog)
-          return res.status(400).json({ msg: "Invalid Authentication 15" });
+          return res.status(400).json({ msg: "Invalid Authentication" });
       } else if (classify.toLowerCase() === "draft") {
         blog = await DraftBlog.findOneAndUpdate(
           {
@@ -518,7 +526,7 @@ const blogCtrl = {
           newBlog
         );
         if (!blog)
-          return res.status(400).json({ msg: "Invalid Authentication 16" });
+          return res.status(400).json({ msg: "Invalid Authentication" });
       }
 
       res.json({ success: true, msg: "Update Blog successfully", blog });
@@ -564,6 +572,12 @@ const blogCtrl = {
     }
   },
 
+  /**
+   * Xóa thông tin bài viết
+   * @param req
+   * @param res
+   * @returns
+   */
   deleteBlog: async (req: IReqAuth, res: Response) => {
     if (!req.user)
       return res.status(400).json({ msg: "Invalid Authentication 20" });
@@ -582,6 +596,12 @@ const blogCtrl = {
     }
   },
 
+  /**
+   * Xóa bài viết nháp
+   * @param req
+   * @param res
+   * @returns
+   */
   deleteDraftBlog: async (req: IReqAuth, res: Response) => {
     if (!req.user)
       return res.status(400).json({ msg: "Invalid Authentication 22" });

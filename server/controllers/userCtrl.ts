@@ -59,7 +59,9 @@ const userCtrl = {
         .json({ success: false, msg: "Invalid Authentication 3" });
     }
     try {
-      const user = await Users.findById(req.params.id).select("-password");
+      const user = await Users.findById(req.params.id)
+        .populate("courses")
+        .select("-password");
       if (!user)
         return res
           .status(400)

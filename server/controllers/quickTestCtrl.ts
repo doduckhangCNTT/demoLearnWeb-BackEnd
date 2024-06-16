@@ -181,6 +181,7 @@ const quickTestCtrl = {
         image,
         questions,
         numberOfTimes,
+        statusAccess,
       } = req.body;
 
       const newQuickTest = new QuickTestModel({
@@ -192,6 +193,7 @@ const quickTestCtrl = {
         image,
         questions,
         numberOfTimes,
+        statusAccess,
       });
       await newQuickTest.save();
 
@@ -226,18 +228,28 @@ const quickTestCtrl = {
     }
   },
 
+  /**
+   * Xóa thông tin quickTest
+   */
   deleteQuickTest: async (req: IReqAuth, res: Response) => {
     try {
       const quickTestId = req.params.id;
-      const quickTest = await QuickTestModel.findOneAndDelete({
-        _id: quickTestId,
-      });
+      if (quickTestId) {
+        const quickTest = await QuickTestModel.findOneAndDelete({
+          _id: quickTestId,
+        });
 
-      return res.json({
-        success: true,
-        quickTest,
-        msg: "Delete quick test successfully",
-      });
+        return res.json({
+          success: true,
+          quickTest,
+          msg: "Delete quick test successfully",
+        });
+      } else {
+        res.status(400).json({
+          success: false,
+          error: "You need to provide a quick test id to delete",
+        });
+      }
     } catch (error: any) {
       res.status(500).json({ success: false, error: error.message });
     }

@@ -9,8 +9,6 @@ const courseSchema = new mongoose.Schema(
       type: String,
       required: true,
       trim: true,
-      minLength: 2,
-      maxLength: 20,
     },
 
     thumbnail: { type: Object, required: true },
@@ -43,6 +41,13 @@ const courseSchema = new mongoose.Schema(
             // },
             fileUpload: Object,
             description: String,
+            /**Chứa thông tin bài test của người tạo cho mỗi bài học */
+            quiz: {
+              quizId: String,
+              completed: Boolean,
+              status: String,
+            },
+            statusDoQuiz: String,
           },
         ],
       },

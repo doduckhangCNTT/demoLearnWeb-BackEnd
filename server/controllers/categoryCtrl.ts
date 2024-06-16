@@ -6,7 +6,7 @@ const categoryCtrl = {
   getCategories: async (req: Request, res: Response) => {
     try {
       const categories = await Categories.find().sort("-createdAt");
-
+      if (!categories) res.json({});
       res.json({ categories });
     } catch (error: any) {
       res.status(400).json({ msg: error.message });

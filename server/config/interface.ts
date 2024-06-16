@@ -10,7 +10,23 @@ export interface IUser extends Document {
   type: string;
   rf_token: string;
   _doc: object;
+  courses: ICourseUser[];
 }
+
+type ICourseUser = {
+  course: string;
+  progressLesson: number;
+  lessonId: string;
+  lessons: ILessonOfCourse[];
+};
+
+type ILessonOfCourse = {
+  lessonId: string;
+  quiz?: {
+    quizId: string;
+    completed: boolean;
+  };
+};
 
 export interface IReqAuth extends Request {
   user?: IUser;
@@ -97,6 +113,7 @@ export interface IQuickTests {
   description: string;
   image: { url: string | File; public_id: string };
   numberOfTimes: number;
+  statusAccess: string;
   questions: [
     {
       titleQuestion: string;
@@ -129,10 +146,30 @@ export interface ICourses {
         name: String,
         url: String | File,
         fileUpload: { public_id: String; secure_url: String },
-        description: String
+        description: String,
+        quiz?: {
+          quizId: String;
+          completed: Boolean;
+          status: String;
+        },
+        statusDoQuiz?: String
       ];
       _id?: string;
       _doc?: object;
     }
   ];
+}
+
+/**
+ * Khóa học được người dùng đăng kí
+ */
+export interface ICourseOfUser {
+  /**Mã khóa học */
+  courseId: string;
+  /**Mã người dùng */
+  userId: string;
+  /**Tiến trình khóa học */
+  progressLesson: number;
+  /**Mã bài học */
+  lessonId: string;
 }

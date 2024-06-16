@@ -42,6 +42,29 @@ const userSchema = new mongoose.Schema(
       default: "register",
     },
     rf_token: { type: String, select: true },
+
+    // Danh sách các khóa học người dùng đã đăng kí
+    courses: [
+      {
+        /**Thông tin khóa học */
+        course: { type: mongoose.Types.ObjectId, ref: "courses" },
+        /**Tiến bài học của người dùng */
+        progressLesson: { type: Number, default: 0 },
+        lessonId: { type: String },
+        /**
+         * Mục đích là lưu lại các bài học mà người dùng đã học và trạng thái hoàn thành quiz của bài học đó
+         */
+        lessons: [
+          {
+            lessonId: String,
+            quiz: {
+              quizId: { type: String, ref: "quickTests" },
+              completed: Boolean,
+            },
+          },
+        ],
+      },
+    ],
   },
   { timestamps: true }
 );

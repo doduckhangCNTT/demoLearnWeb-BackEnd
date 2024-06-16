@@ -20,6 +20,8 @@ router.get("/coursesPage", courseCtrl.getCoursesPage);
 
 router.get("/coursesPageSearch", courseCtrl.getCoursesSearch);
 
+router.patch("/course", authUser, courseCtrl.updateCourse);
+
 router.post(
   "/course/:courseId/chapter/:chapterId/lesson",
   authUser,
@@ -42,5 +44,17 @@ router
   .patch(courseCtrl.updateLessonOfChapter);
 // .patch(courseCtrl.updateCourse);
 // .delete(courseCtrl.deleteCourse);
+
+/**Thêm thông tin khóa học được đăng kí bởi user */
+router.post("/course/user", courseCtrl.addCourseSignedForUser);
+
+router.delete("/course", authUser, courseCtrl.deleteCourse);
+
+/**Lưu thông tin khóa học, bài test đã làm của user hiện tại */
+router.post(
+  "/course/lesson",
+  authUser,
+  courseCtrl.addLessonAndQuizLearnedForUser
+);
 
 export default router;

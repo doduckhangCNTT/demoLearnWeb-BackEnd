@@ -41,10 +41,11 @@ const authCtrl = {
       const access_token = generateActiveToken({ newUser });
 
       const url = `${process.env.BASE_URL}/active/${access_token}`;
+      console.log("Url: ", url);
+
       // Check register with pass or phone
-      // console.log("ValidEmail: ", validEmail(account));
       if (validEmail(account)) {
-        sendEmail(account, url, "Verify your email");
+        await sendEmail(account, url, "Verify your email");
         return res.json({
           success: true,
           access_token,
@@ -124,12 +125,6 @@ const authCtrl = {
         return res.status(400).json({ success: false, msg: "User not found" });
       }
 
-      // if (rf_token !== user.rf_token) {
-      //   return res
-      //     .status(400)
-      //     .json({ success: false, msg: "You need Login or Register 3" });
-      // }
-
       const access_token = generateAccessToken({ id: user._id });
       const refresh_token = generateRefreshToken({ id: user._id }, res);
 
@@ -157,9 +152,7 @@ const authCtrl = {
         jwt.verify(active_token, `${process.env.ACTIVE_TOKEN_SECRET}`)
       );
       const { newUser } = decoded;
-      // console.log("Decoded: ", decoded);
       if (!newUser) {
-        console.log("IV");
         return res
           .status(400)
           .json({ success: false, msg: "Invalid Authentication 12" });
@@ -185,20 +178,14 @@ const authCtrl = {
         idToken: token,
         audience: process.env.MAIL_CLIENT_ID,
       });
-
-      console.log({ verify });
-
       const { email, email_verified, name, picture } = <IGooglePayLoad>(
         verify?.getPayload()
       );
-      console.log({ email, email_verified, name, picture });
       if (!email_verified)
         return res.status(400).json({ msg: "Email is not verified" });
-
       const password = email + "You secret your account";
       const passwordHash = await bcrypt.hash(password, 12);
       const user = await Users.findOne({ account: email });
-
       if (user) {
         loginUser(user, password, res);
       } else {
@@ -219,7 +206,6 @@ const authCtrl = {
   facebookAccount: async (req: Request, res: Response) => {
     try {
       const { userID, accessToken } = req.body;
-
       // truy cập để lấy path https://developers.facebook.com/docs/graph-api/overview/
       const URL = `https://graph.facebook.com/v4.0/${userID}/?fields=id,name,email,picture&access_token=${accessToken}`;
       const data = await fetch(URL)
@@ -228,7 +214,6 @@ const authCtrl = {
           return res;
         });
       const { email, name, picture } = <IFaceBookPayLoad>data;
-
       const avatar = picture.data.url;
       const password = email + "You secret your account";
       const passwordHash = await bcrypt.hash(password, 12);
@@ -264,7 +249,6 @@ const authCtrl = {
   verifySmsAccount: async (req: Request, res: Response) => {
     try {
       const { phone, code } = req.body;
-
       const data = await smsVerify(phone, code);
       if (!data?.valid)
         return res.status(400).json({ msg: "Invalid Authentication 13" });
@@ -320,7 +304,14 @@ const authCtrl = {
   },
 };
 
+/**
+ * account: hamadahiro268@gmail.com
+ * password: 12345678@Abc
+ */
+
 const loginUser = async (user: IUser, password: string, res: Response) => {
+  if (!user) return res.json({ success: false, msg: "User don't exist" });
+
   const check = await bcrypt.compare(password, user.password);
   if (!check)
     return res.json({ success: false, msg: "User password mismatch" });
@@ -328,7 +319,12 @@ const loginUser = async (user: IUser, password: string, res: Response) => {
   const access_token = generateAccessToken({ id: user._id });
   const refresh_token = generateRefreshToken({ id: user._id }, res);
 
-  await Users.findOneAndUpdate({ _id: user._id }, { rf_token: refresh_token });
+  if (refresh_token) {
+    await Users.findOneAndUpdate(
+      { _id: user._id },
+      { rf_token: refresh_token }
+    );
+  }
 
   res.json({
     success: true,
@@ -341,6 +337,7 @@ const loginUser = async (user: IUser, password: string, res: Response) => {
 
 const registerUser = async (user: IUserParams, res: Response) => {
   const newUser = new Users(user);
+  if (!newUser) return {};
 
   const access_token = generateAccessToken({ id: newUser._id });
   const refresh_token = generateRefreshToken({ id: newUser._id }, res);

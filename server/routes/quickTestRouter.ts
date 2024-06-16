@@ -9,7 +9,7 @@ router.get("/quickTests", authUser, quickTestCtrl.getQuickTests);
 
 router.get("/quickTestsPage", quickTestCtrl.getQuickTestsToPage);
 
-router.get("/quickTestsSearch", quickTestCtrl.getQuickTestsSearch);
+router.get("/quickTestsSearch", authUser, quickTestCtrl.getQuickTestsSearch);
 
 router.get("/quickTest/:id", authUser, authAdmin, quickTestCtrl.getQuickTest);
 

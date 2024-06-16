@@ -28,6 +28,8 @@ const quickTestSchema = new mongoose.Schema(
 
     numberOfTimes: { type: Number, required: true },
 
+    statusAccess: { type: String },
+
     questions: [
       {
         titleQuestion: String,
